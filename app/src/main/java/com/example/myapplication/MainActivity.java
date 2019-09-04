@@ -1,59 +1,34 @@
 package com.example.myapplication;
 
 import android.annotation.SuppressLint;
-
 import android.os.Environment;
-
 import android.os.Bundle;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.PermissionChecker;
-
-import com.example.myapplication.R;
-
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import static java.lang.Math.sqrt;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.SMO;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
-import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.converters.ConverterUtils;
 import weka.core.converters.ConverterUtils.DataSource;
 
 
@@ -65,19 +40,14 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
     private TextView comp;
     private TextView acc;
     private TextView check_Text;
-    private ProgressBar bar;
     public double compositeAcc = 0;
-    private String temp;
     private SensorManager manager;
     public int button_flag = 0;
-    public int check_flag = 0;
     public int progress_flag = 0;
     public int complete_flag = 0;
-    public int Progress_Rate = 0;
     public double AccX = 0;
     public double AccY = 0;
     public double AccZ = 0;
-    public int gresult = 0;
     public int count = 0;
 
     public void onAccuracyChanged(Sensor sensor, int n) {
@@ -110,10 +80,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         final ProgressBar progressBar = findViewById(R.id.progressBar2);
         progressBar.setProgress(0);
 
-//        schedule(progressBar);
-
-
-
         walking_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,8 +90,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
 
@@ -139,8 +103,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
 
@@ -154,11 +116,8 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
-
 
         stop_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,11 +133,8 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
             @Override
             public void onClick(View v) {
                 if (complete_flag >= 3) {
-                    check_flag = 1;
                     button_flag = 1;
-//                    readArff();
                 }
-
             }
         });
 
@@ -321,8 +277,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         else{
             progressBar.setProgress(0);
         }
-
-
     }
 
 
@@ -362,7 +316,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         // 4.最後にファイルを閉じてリソースを開放する
         fileReader.close();
 
-
         File run_file = new File(Environment.getExternalStorageDirectory().getPath() + "/weka/running.csv");
         // 2.ファイルが存在しない場合に例外が発生するので確認する
         if (!run_file.exists()) {
@@ -388,72 +341,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
     }
 
 
-    public void readArff(){
-
-//
-//        try {
-//              /*
-//              * 1 : arffのDataSourceインスタンスの生成
-//              * 2 : 訓練データのインスタンス生成　.getDataSet();
-//              * 3 : 分類したい属性の番号を指定　setClassIndex(1);
-//              * 4 : J48の分類器を生成　Classifier classifier = new J48();
-//              * 5 : 分類機の構築　classifier.buildClassifier(instances);
-//              * */
-//
-//            String path = Environment.getExternalStorageDirectory().getPath() + "/weka/weka.arff";
-//            DataSource source = new DataSource(path);
-//            Instances instances = source.getDataSet();
-//            instances.setClassIndex(1);//setClassIndexは分類したい属性の番号
-//            Classifier classifier = new J48();//分類器の生成
-//            classifier.buildClassifier(instances);//buildClassifierを呼び出して分類機を構築する
-//
-//            //評価、Evalutionオブジェクトを生成してモデルと学習データを入れる。
-//            Evaluation eval = new Evaluation(instances);
-//            eval.evaluateModel(classifier, instances);
-//            //toSummaryStringでモデルに沿った結果が見れる
-//           Attribute acceleraton = new Attribute("acceleraton", 0);
-//           int count = 1;
-//            while (count >= 0){
-//                button_flag = 1;
-//                count++;
-////                check_Text.setText("aaaa");
-//                if(count % 10 == 0){
-//                    button_flag = 0;
-//
-//                    Instance instance = new DenseInstance(2);
-//                    instance.setValue(acceleraton, compositeAcc);
-//                    instance.setDataset(instances);
-//                    double result = classifier.classifyInstance(instance);
-//                    String pattern;
-//                    int pt = (int) result;
-//                    switch(pt){
-//                        case 0 :
-//                            pattern = "立ち";
-//                            break;
-//                        case 1 :
-//                            pattern = "歩き";
-//                            break;
-//                        case 2 :
-//                            pattern = "走り";
-//                            break;
-//                            default:pattern = "立ち";
-//                    }
-////                    check_Text.setText("result" + result);
-//                    check_Text.setText(pattern);
-//                }
-//
-//
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-    }
-
-
-
-
     @SuppressLint("SetTextI18n")//センサーの値が変化すると呼ばれるリスナー、加速度センサ３軸の値をmX,mY,mZに更新
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -473,12 +360,10 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                     AccY = sensorEvent.values[1];
                     AccZ = sensorEvent.values[2];
 
-
                     compositeAcc = Math.pow(AccX,2) + Math.pow(AccY, 2) + Math.pow(AccZ, 2);
                     compositeAcc = sqrt(compositeAcc);
                     acc.setText("acceleration : " + compositeAcc);
                     }
-
 
                 if (complete_flag >= 3) {
                     try {
@@ -540,13 +425,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 mZ.setText("止まっていますZ");
                 acc.setText("止まっています");
             }
-
-
-
-
-
-
-
         }
     }
 
