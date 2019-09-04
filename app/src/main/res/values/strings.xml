@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="hello">こんちわｗｗ</string>
+    <string name="button">Button</string>
+    <string name="textview">TextView</string>
+    <string name="START" >START</string>
+    <string name="STOP">STOP</string>
+    <string name="acceleration">acceleration</string>
+    <string name="Walk_measurement">歩き測定開始</string>
+    <string name="Stop_measurement">測定停止</string>
+    <string name="Stand_measurement">立ち測定開始</string>
+    <string name="Run_measurement">走り測定開始</string>
+</resources>
