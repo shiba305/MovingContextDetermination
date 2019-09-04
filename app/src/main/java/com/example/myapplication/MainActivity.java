@@ -1,14 +1,7 @@
 package com.example.myapplication;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.CountDownTimer;
+
 import android.os.Environment;
 
 import android.os.Bundle;
@@ -54,7 +47,9 @@ import static java.lang.Math.sqrt;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.SMO;
+import weka.classifiers.trees.J48;
 import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -82,6 +77,8 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
     public double AccX = 0;
     public double AccY = 0;
     public double AccZ = 0;
+    public int gresult = 0;
+    public int count = 0;
 
     public void onAccuracyChanged(Sensor sensor, int n) {
     }
@@ -163,9 +160,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         });
 
 
-
-
-
         stop_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,9 +173,11 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         check_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                check_flag = 1;
-                button_flag = 1;
-                readArff();
+                if (complete_flag >= 3) {
+                    check_flag = 1;
+                    button_flag = 1;
+//                    readArff();
+                }
 
             }
         });
@@ -217,18 +213,19 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory().getPath() + "/weka/standing.csv", false);
                 PrintWriter pw = new PrintWriter(new BufferedWriter(fw));
                 public void run() {
-                    // 定期的に実行したい処理
+                // 定期的に実行したい処理
                 count++;
-                        progressBar.setProgress(10 * count);
+                        progressBar.setProgress(count);
                     pw.print(compositeAcc);
-                    pw.print(",standing");
+                    pw.print(", standing");
                     pw.println();
 
-                    if (count >= 10 || progress_flag == 0) {
+                    if (count >= 400 || progress_flag == 0) {
                         pw.close();
                         timer.cancel();
+                        button_flag = 0;
                         complete_flag++;
-                        if (complete_flag == 3){
+                        if (complete_flag >= 3){
                             comp.setText("全て測定完了");
                             try {
                                 createArff();
@@ -240,7 +237,7 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                     }
                 }
             };
-            timer.scheduleAtFixedRate(task, 1000, 1000); // 今回追加する処理
+            timer.scheduleAtFixedRate(task, 25, 25); // 今回追加する処理
         }
         else{
                 progressBar.setProgress(0);
@@ -257,16 +254,17 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 public void run() {
                     // 定期的に実行したい処理
                     count++;
-                    progressBar.setProgress(10 * count);
+                    progressBar.setProgress(count);
                     pw.print(compositeAcc);
-                    pw.print(",walking");
+                    pw.print(", walking");
                     pw.println();
 
-                    if (count >= 10 || progress_flag == 0) {
+                    if (count >= 400 || progress_flag == 0) {
                         pw.close();
                         timer.cancel();
+                        button_flag = 0;
                         complete_flag++;
-                        if (complete_flag == 3){
+                        if (complete_flag >= 3){
                             comp.setText("全て測定完了");
                             try {
                                 createArff();
@@ -279,7 +277,7 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                     }
                 }
             };
-            timer.scheduleAtFixedRate(task, 1000, 1000); // 今回追加する処理
+            timer.scheduleAtFixedRate(task, 25, 25); // 今回追加する処理
         }
         else{
             progressBar.setProgress(0);
@@ -295,16 +293,17 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                 public void run() {
                     // 定期的に実行したい処理
                     count++;
-                    progressBar.setProgress(10 * count);
+                    progressBar.setProgress(count);
                     pw.print(compositeAcc);
-                    pw.print(",running");
+                    pw.print(", running");
                     pw.println();
 
-                    if (count >= 10 || progress_flag == 0) {
+                    if (count >= 400 || progress_flag == 0) {
                         pw.close();
                         timer.cancel();
+                        button_flag = 0;
                         complete_flag++;
-                        if (complete_flag == 3){
+                        if (complete_flag >= 3){
                             comp.setText("全て測定完了");
                             try {
                                 createArff();
@@ -317,7 +316,7 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                     }
                 }
             };
-            timer.scheduleAtFixedRate(task, 1000, 1000); // 今回追加する処理
+            timer.scheduleAtFixedRate(task,25 , 25); // 今回追加する処理
         }
         else{
             progressBar.setProgress(0);
@@ -328,7 +327,7 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
 
 
     public void createArff()throws IOException {
-        String text_data = "@relation file\n\n@attribute acceleration real\n@attribute state\n{standing,walking,running}\n\n@data\n";
+        String text_data = "@relation file\n\n@attribute acceleration real\n@attribute state{standing,walking,running}\n\n@data\n";
 
 
         File stand_file = new File(Environment.getExternalStorageDirectory().getPath() + "/weka/standing.csv");
@@ -347,7 +346,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         // 4.最後にファイルを閉じてリソースを開放する
         fileReader.close();
 
-
         File walk_file = new File(Environment.getExternalStorageDirectory().getPath() + "/weka/walking.csv");
         // 2.ファイルが存在しない場合に例外が発生するので確認する
         if (!stand_file.exists()) {
@@ -358,7 +356,7 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         FileReader fileReader2 = new FileReader(walk_file);
 //        data = 0;
         while ((data = fileReader2.read()) != -1) {
-            System.out.print((char) data);
+//            System.out.print((char) data);
             text_data += (char) data;
         }
         // 4.最後にファイルを閉じてリソースを開放する
@@ -389,42 +387,67 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
 
     }
 
+
     public void readArff(){
-        DataSource source = null;
-        try {
-            source = new DataSource("weka.arff");
-            Instances instances = source.getDataSet();
-            instances.setClassIndex(1);//setClassIndexは分類したい属性の番号
-            Classifier classifier = new SMO();
-            classifier.buildClassifier(instances);//buildClassifierを呼び出して分類機を構築する
 
-            //評価、Evalutionオブジェクトを生成してモデルと学習データを入れる。
-            Evaluation eval = new Evaluation(instances);
-            eval.evaluateModel(classifier, instances);
-
-//            toSummaryStringでモデルに沿った結果が見れる
-            System.out.println(eval.toSummaryString());
-
-//            FastVector out = new FastVector(3);
-
-            Attribute acceleraton = new Attribute("acceleraton", 0);
-//            out.addElement("standing");
-//            out.addElement("walking");
-//            out.addElement("running");
-//            Attribute state = new Attribute("state",out, 1);
-
-            while (button_flag == 1){
-                Instance instance = instances.get(1);//new Instance(1);
-                instance.setValue(acceleraton, compositeAcc);
-                instance.setDataset(instances);
-
-                double result = classifier.classifyInstance(instance);
-                check_Text.setText((int) result);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//
+//        try {
+//              /*
+//              * 1 : arffのDataSourceインスタンスの生成
+//              * 2 : 訓練データのインスタンス生成　.getDataSet();
+//              * 3 : 分類したい属性の番号を指定　setClassIndex(1);
+//              * 4 : J48の分類器を生成　Classifier classifier = new J48();
+//              * 5 : 分類機の構築　classifier.buildClassifier(instances);
+//              * */
+//
+//            String path = Environment.getExternalStorageDirectory().getPath() + "/weka/weka.arff";
+//            DataSource source = new DataSource(path);
+//            Instances instances = source.getDataSet();
+//            instances.setClassIndex(1);//setClassIndexは分類したい属性の番号
+//            Classifier classifier = new J48();//分類器の生成
+//            classifier.buildClassifier(instances);//buildClassifierを呼び出して分類機を構築する
+//
+//            //評価、Evalutionオブジェクトを生成してモデルと学習データを入れる。
+//            Evaluation eval = new Evaluation(instances);
+//            eval.evaluateModel(classifier, instances);
+//            //toSummaryStringでモデルに沿った結果が見れる
+//           Attribute acceleraton = new Attribute("acceleraton", 0);
+//           int count = 1;
+//            while (count >= 0){
+//                button_flag = 1;
+//                count++;
+////                check_Text.setText("aaaa");
+//                if(count % 10 == 0){
+//                    button_flag = 0;
+//
+//                    Instance instance = new DenseInstance(2);
+//                    instance.setValue(acceleraton, compositeAcc);
+//                    instance.setDataset(instances);
+//                    double result = classifier.classifyInstance(instance);
+//                    String pattern;
+//                    int pt = (int) result;
+//                    switch(pt){
+//                        case 0 :
+//                            pattern = "立ち";
+//                            break;
+//                        case 1 :
+//                            pattern = "歩き";
+//                            break;
+//                        case 2 :
+//                            pattern = "走り";
+//                            break;
+//                            default:pattern = "立ち";
+//                    }
+////                    check_Text.setText("result" + result);
+//                    check_Text.setText(pattern);
+//                }
+//
+//
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -455,15 +478,77 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
                     compositeAcc = sqrt(compositeAcc);
                     acc.setText("acceleration : " + compositeAcc);
                     }
+
+
+                if (complete_flag >= 3) {
+                    try {
+                        /*
+                         * 1 : arffのDataSourceインスタンスの生成
+                         * 2 : 訓練データのインスタンス生成　.getDataSet();
+                         * 3 : 分類したい属性の番号を指定　setClassIndex(1);
+                         * 4 : J48の分類器を生成　Classifier classifier = new J48();
+                         * 5 : 分類機の構築　classifier.buildClassifier(instances);
+                         * */
+                        count++;
+
+                        if (count % 100 == 0) {
+                            count = 0;
+
+                            String path = Environment.getExternalStorageDirectory().getPath() + "/weka/weka.arff";
+                            DataSource source = new DataSource(path);
+                            Instances instances = source.getDataSet();
+                            instances.setClassIndex(1);//setClassIndexは分類したい属性の番号
+                            Classifier classifier = new J48();//分類器の生成
+                            classifier.buildClassifier(instances);//buildClassifierを呼び出して分類機を構築する
+
+                            //評価、Evalutionオブジェクトを生成してモデルと学習データを入れる。
+                            Evaluation eval = new Evaluation(instances);
+                            eval.evaluateModel(classifier, instances);
+                            //toSummaryStringでモデルに沿った結果が見れる
+                            Attribute acceleraton = new Attribute("acceleraton", 0);
+
+                            Instance instance = new DenseInstance(2);
+                            instance.setValue(acceleraton, compositeAcc);
+                            instance.setDataset(instances);
+                            double result = classifier.classifyInstance(instance);
+                            String pattern;
+                            int pt = (int) result;
+                            switch (pt) {
+                                case 0:
+                                    pattern = "立ち";
+                                    break;
+                                case 1:
+                                    pattern = "歩き";
+                                    break;
+                                case 2:
+                                    pattern = "走り";
+                                    break;
+                                default:
+                                    pattern = "立ち";
+                            }
+                            check_Text.setText(pattern);
+                        }
+//
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                    }
             } else {
                 mX.setText("止まっていますX");
                 mY.setText("止まっていますY");
                 mZ.setText("止まっていますZ");
                 acc.setText("止まっています");
             }
+
+
+
+
+
+
+
         }
     }
 
 
-}
 
