@@ -144,7 +144,6 @@ public class  MainActivity extends AppCompatActivity implements SensorEventListe
         acc = this.findViewById(R.id.textView5);
         comp = this.findViewById(R.id.textView9);
         check_Text = this.findViewById(R.id.textView10);
-
     }
 
 
